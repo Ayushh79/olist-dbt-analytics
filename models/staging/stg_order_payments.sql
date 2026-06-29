@@ -7,5 +7,5 @@ select
     payment_sequential,
     payment_type,
     payment_installments,
-    payment_value::number(10,2) as payment_value
+    payment_value::numeric(10,2) as payment_value
 from source
