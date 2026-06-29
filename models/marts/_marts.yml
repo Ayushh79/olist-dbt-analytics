@@ -1,0 +1,71 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: "Customer dimension. One row per customer_id, enriched with lat/lng from geolocation."
+    columns:
+      - name: customer_id
+        description: "Primary key."
+        data_tests: [unique, not_null]
+
+  - name: dim_products
+    description: "Product dimension. One row per product_id, with the English category name."
+    columns:
+      - name: product_id
+        description: "Primary key."
+        data_tests: [unique, not_null]
+
+  - name: dim_sellers
+    description: "Seller dimension. One row per seller_id, enriched with lat/lng from geolocation."
+    columns:
+      - name: seller_id
+        description: "Primary key."
+        data_tests: [unique, not_null]
+
+  - name: fct_orders
+    description: "Order fact table. One row per order with delivery, payment, and review measures."
+    columns:
+      - name: order_id
+        description: "Primary key (grain = one order)."
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: "Foreign key to dim_customers."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_id
+      - name: order_status
+        description: "Status of the order."
+      - name: total_order_value
+        description: "Sum of item price + freight across the order."
+
+  - name: fct_order_items
+    description: "Order-item fact table. One row per item within an order."
+    columns:
+      - name: order_item_key
+        description: "Surrogate primary key = md5(order_id, order_item_id)."
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: "Foreign key to fct_orders."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('fct_orders')
+              field: order_id
+      - name: product_id
+        description: "Foreign key to dim_products."
+        data_tests:
+          - relationships:
+              to: ref('dim_products')
+              field: product_id
+              config:
+                severity: warn
+      - name: seller_id
+        description: "Foreign key to dim_sellers."
+        data_tests:
+          - relationships:
+              to: ref('dim_sellers')
+              field: seller_id
+              config:
+                severity: warn

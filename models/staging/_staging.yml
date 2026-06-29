@@ -1,0 +1,111 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: "Cleaned customers: one row per customer_id."
+    columns:
+      - name: customer_id
+        description: "Primary key. Identifies a customer within a single order."
+        data_tests: [unique, not_null]
+      - name: customer_unique_id
+        description: "Identifies the actual person across orders."
+        data_tests: [not_null]
+
+  - name: stg_orders
+    description: "Cleaned orders: one row per order, timestamps cast to TIMESTAMP."
+    columns:
+      - name: order_id
+        description: "Primary key."
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: "Foreign key to stg_customers."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: status
+        description: "Order lifecycle status."
+        data_tests:
+          - accepted_values:
+              values: ['delivered','shipped','canceled','unavailable','invoiced','processing','created','approved']
+              config:
+                severity: warn
+
+  - name: stg_order_items
+    description: "One row per item within an order. Grain: order_id + order_item_id."
+    columns:
+      - name: order_id
+        description: "Foreign key to stg_orders."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+      - name: product_id
+        description: "Foreign key to stg_products."
+        data_tests: [not_null]
+      - name: seller_id
+        description: "Foreign key to stg_sellers."
+        data_tests: [not_null]
+      - name: price
+        description: "Item price in BRL."
+        data_tests: [not_null]
+
+  - name: stg_order_payments
+    description: "Payment records. Grain: order_id + payment_sequential."
+    columns:
+      - name: order_id
+        description: "Foreign key to stg_orders."
+        data_tests: [not_null]
+      - name: payment_type
+        description: "Payment method."
+        data_tests:
+          - accepted_values:
+              values: ['credit_card','boleto','voucher','debit_card','not_defined']
+              config:
+                severity: warn
+
+  - name: stg_order_reviews
+    description: "Customer reviews. review_id is intentionally NOT tested unique (the dataset contains duplicates)."
+    columns:
+      - name: order_id
+        description: "Foreign key to stg_orders."
+        data_tests: [not_null]
+      - name: review_score
+        description: "1-5 customer satisfaction score."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5]
+              quote: false
+              config:
+                severity: warn
+
+  - name: stg_products
+    description: "Product catalog. The two misspelled raw columns are corrected here."
+    columns:
+      - name: product_id
+        description: "Primary key."
+        data_tests: [unique, not_null]
+
+  - name: stg_sellers
+    description: "Seller catalog: one row per seller_id."
+    columns:
+      - name: seller_id
+        description: "Primary key."
+        data_tests: [unique, not_null]
+
+  - name: stg_product_category_translation
+    description: "Portuguese-to-English category name map."
+    columns:
+      - name: product_category_name
+        description: "Primary key (Portuguese category name)."
+        data_tests: [unique, not_null]
+
+  - name: stg_geolocation
+    description: "One row per zip code prefix, deduplicated from the raw geolocation table."
+    columns:
+      - name: zip_code_prefix
+        description: "Primary key after deduplication."
+        data_tests: [unique, not_null]

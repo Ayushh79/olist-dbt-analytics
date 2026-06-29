@@ -1,0 +1,28 @@
+name: 'olist_analytics'
+version: '1.0.0'
+config-version: 2
+
+profile: 'olist_analytics'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Materialization strategy by layer:
+#   staging/intermediate -> views  (cheap, always-fresh, no storage)
+#   marts                -> tables (fast to query, the layer BI hits)
+models:
+  olist_analytics:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table

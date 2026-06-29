@@ -1,0 +1,26 @@
+version: 2
+
+sources:
+  - name: olist
+    description: "Raw Olist Brazilian e-commerce data, loaded from Kaggle CSVs into the RAW schema."
+    database: OLIST
+    schema: RAW
+    tables:
+      - name: customers
+        description: "One row per customer per order (customer_id). customer_unique_id identifies the real person."
+      - name: geolocation
+        description: "Brazilian zip code prefixes mapped to lat/lng. Many rows per zip prefix."
+      - name: orders
+        description: "Core order table. One row per order."
+      - name: order_items
+        description: "One row per item within an order. Grain: order_id + order_item_id."
+      - name: order_payments
+        description: "Payment installments per order. Grain: order_id + payment_sequential."
+      - name: order_reviews
+        description: "Customer reviews. Roughly one per order, but review_id is NOT unique."
+      - name: products
+        description: "Product catalog. One row per product_id. Note: two columns are misspelled in the raw data."
+      - name: sellers
+        description: "Seller catalog. One row per seller_id."
+      - name: product_category_name_translation
+        description: "Maps Portuguese category names to English."

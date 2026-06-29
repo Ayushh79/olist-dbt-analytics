@@ -1,0 +1,18 @@
+# dbt
+target/
+dbt_packages/
+logs/
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# raw data (large; not ours to redistribute)
+data/
+*.csv
+
+# credentials -- load_raw.py contains your Snowflake password
+load_raw.py
+.env
+profiles.yml
